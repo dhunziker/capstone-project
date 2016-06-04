@@ -1,0 +1,90 @@
+Capstone Project - Next Word Prediction
+========================================================
+author: Dennis Hunziker
+date: 30 May 2016
+font-family: 'Helvetica'
+autosize: true
+
+<style>
+h1 {
+    width: 680px;
+}
+.reveal .slides {
+    font-size: 75%;
+}
+.reveal .slides .mediaInline {
+    text-align: center;
+}
+.reveal .slides .mediaInline img {
+    margin-top: -5px;
+}
+</style>
+
+Objective
+========================================================
+
+- Build the components for a smart keyboard that can predict a next word based on an arbitrary sentence provided by a user
+
+    + Capstone project in a series of 10 courses that are all part of the Data Science Specialization taught by the Johns Hopkins University
+
+    + Getting up to speed with natural language processing (NLP) and come up with an implementation for the same, making use of the knowledge acquired during previous courses
+
+- The 2 data products produced for this project are:
+
+    + A web application on [shinyapps.io](https://dhunziker.shinyapps.io/capstone-webapp/)
+
+    + This presentation on [RPubs](http://rpubs.com/dhunziker/capstone-report)
+
+Algorithm
+========================================================
+
+- The [quanteda package](https://cran.r-project.org/web/packages/quanteda/quanteda.pdf) is used to generate uni-, bi-, tri-, four- and fivegrams based on a corpus that consists of English twitter messages, blog posts and news articles
+
+  + The main challenge during this part was to batch up the processing in order to avoid memory issues
+
+  + While creating the n-grams, text is converted to lower case, punctuation, twitter handles, hash tags, numbers and punctuation is removed
+
+  + Stop words, while not required for sentiment analysis, are retained for these models
+
+- In order to reduce the size of the model I then removed all n-grams with a count of 3 or less
+
+- A lot of n-grams observed contained rather random strings of symbols (e.g. ~~~) which I've filtered out as well
+
+- During the next step I reshaped the n-grams into data tables with separate columns for the prefix (all but the last word), the next_word (last word of the n-gram) and its count
+
+Algorithm (contd.)
+========================================================
+
+- Finally, I implemented the [Stupid Backoff (Brants et al., 2007)](http://www.aclweb.org/anthology/D07-1090.pdf) as described in this paper. For large amounts of data this would be as accurate as any of the much more complex and computationally more intensive algorithms
+
+    + Concepts and alternatives I investigated were: Maximum likelihood estimator (MLE), Good-Turing estimation, Kneser-Ney and Katz backoff smoothing
+
+    + One of the main advantages of the stupid backoff algorithm is that it can be computed upfront and is fairly simple compared to the alternatives mentioned above
+
+- Finally, the n-grams were combined into a single model and sorted descending by the newly introduced score variable `s`
+
+- Going forward, `s` is used as a pseudo probability when determining relative importance of an n-gram versus another
+
+User Experience
+========================================================
+
+- The picture below shows 3 examples of text input (including no input at all) and the offered next word predictions on an iPhone
+
+- You can see the fairly basic suggestions i.e. get appearing twice
+
+- The prediction ability gets even worse in the last example where "glasses" is the only reasonable suggestion
+
+- My tests showed that this type of mobile app usually considers a fairly small history of words (lower order n-grams only)
+
+![iPhone](iPhone.png)
+
+User Experience (contd.)
+========================================================
+
+- In comparison, my application features a wide range of predictions with a total of 10'000 unique words to predict while the user is typing
+
+- The user interface was kept simple and fairly similar to the most popular mobile phone keyboards out there
+
+- Should the application not recognize the word currently being typed, it will appear in double quotes, however, a user isn't forced to press any of the buttons and can instead just continue to typing ahead
+
+![iPhone](myApp.png)
